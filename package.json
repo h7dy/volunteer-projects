@@ -6,10 +6,14 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.14.0",
+    "dotenv": "^17.2.3",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.0.1",
     "next": "15.5.9",
     "react": "19.1.0",
     "react-dom": "19.1.0"
@@ -23,6 +27,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.9",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
