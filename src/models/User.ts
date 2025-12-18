@@ -3,12 +3,13 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IUser extends Document {
   email: string;
   role: 'volunteer' | 'lead' | 'admin';
-  status: 'active' | 'pending';
-  auth0Id?: string;
+  status: 'active' | 'pending' | 'rejected';
+  auth0Id: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
-const UserSchema: Schema<IUser> = new Schema(
+const UserSchema = new Schema<IUser>(
   {
     email: {
       type: String,
@@ -22,20 +23,20 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'pending'],
+      enum: ['active', 'pending', 'rejected'],
       default: 'pending',
     },
     auth0Id: {
       type: String,
+      required: true, // Required as we rely on this for syncing
       unique: true,
-      sparse: true, // Allows multiple users to have no auth0Id (null/undefined) initially
+      index: true,    // To speed up the login sync query
     },
   },
   {
-    timestamps: true, // adds createdAt and updatedAt automatically
+    timestamps: true,
   }
 );
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
-
 export default User;
