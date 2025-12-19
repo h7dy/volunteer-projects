@@ -1,14 +1,18 @@
 import { checkRole } from '@/lib/auth';
 
 export default async function AdminDashboard() {
-  const user = await checkRole(['admin']);
+  // Only allow leads/admins (need to decide later)
+  const user = await checkRole(['admin', 'lead']);
 
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold">Hello Admin 🛡️</h1>
-      <p>Welcome, {user.email}</p>
-      <div className="mt-4 p-4 bg-green-100 rounded">
-        Because you can see this, you are definitely an Admin in MongoDB.
+    <div className="max-w-5xl mx-auto p-8 border-l-4 border-red-500 bg-red-50">
+      <h1 className="text-3xl font-bold text-red-900">Admin Control Center</h1>
+      <p>Welcome, Admin {user.name}</p>
+      
+      <div className="mt-6">
+        <a href="/projects/new" className="underline text-red-700">
+           + Create New Project
+        </a> 
       </div>
     </div>
   );

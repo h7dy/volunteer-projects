@@ -1,12 +1,14 @@
 "use client";
 
-export default function LoginButton() {
+interface LoginButtonProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export default function LoginButton({ className, children }: LoginButtonProps) {
   return (
-    <a
-      href="/auth/login"
-      className="button login"
-    >
-      Log In
+    <a href="/auth/login" className={className}>
+      {children || "Log In"}
     </a>
   );
 }

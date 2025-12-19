@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IParticipation extends Document {
   userId: mongoose.Types.ObjectId;
@@ -21,4 +21,5 @@ const ParticipationSchema = new Schema<IParticipation>({
 // Ensures a user can't join the same project twice
 ParticipationSchema.index({ userId: 1, projectId: 1 }, { unique: true });
 
-export const Participation = mongoose.models.Participation || mongoose.model<IParticipation>('Participation', ParticipationSchema);
+export const Participation: Model<IParticipation> = 
+  mongoose.models.Participation || mongoose.model<IParticipation>('Participation', ParticipationSchema);
