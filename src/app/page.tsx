@@ -6,7 +6,8 @@ export default async function HomePage() {
   const user = await getAuthUser();
 
   if (user) {
-    if (user.role === 'admin' || user.role === 'lead') redirect('/admin');
+    if (user.role === 'admin') redirect ('/admin')
+    else if (user.role === 'lead') redirect('/admin');
     else redirect('/volunteer');
   }
 

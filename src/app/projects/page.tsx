@@ -1,9 +1,11 @@
 // src/app/projects/page.tsx
 import { checkRole } from '@/lib/auth';
-import { Project, IProject } from '@/models/Project';
+import { Project } from '@/models/Project';
 import { Participation } from '@/models/Participation';
 import ProjectCard from '@/app/projects/ProjectCard';
 import dbConnect from '@/lib/db';
+import { Separator } from "@/components/ui/separator";
+import { Search } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +15,7 @@ export default async function ProjectsPage() {
   
   await dbConnect();
 
-  // Parallel Fetching: Get Projects AND My Enrollments
+  // Parallel Fetching: Get Active Projects AND My Enrollments
   const [projects, myEnrollments] = await Promise.all([
     Project.find({ status: 'active' }).sort({ createdAt: -1 }).lean(),
     Participation.find({ userId: user.dbId }).select('projectId').lean()
@@ -25,31 +27,44 @@ export default async function ProjectsPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Open Projects</h1>
-        <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-          Volunteer: {user.name}
-        </span>
+    <div className="max-w-6xl mx-auto px-6 py-12 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Explore Projects</h1>
+        <p className="text-muted-foreground mt-1">
+          Find opportunities to contribute and make a difference.
+        </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {projects.map((project: any) => (
-          <ProjectCard 
-            key={project._id.toString()} 
-            project={{
-              _id: project._id.toString(),
-              title: project.title,
-              description: project.description,
-            }}
-            isJoined={joinedProjectIds.has(project._id.toString())}
-          />
-        ))}
-        
-        {projects.length === 0 && (
-          <p className="text-gray-500">No active projects found.</p>
-        )}
-      </div>
+      <Separator />
+
+      {/* Projects Grid */}
+      {projects.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-lg border border-dashed">
+          <Search className="h-10 w-10 text-slate-400 mb-4" />
+          <h3 className="font-medium text-lg text-slate-900">No active projects</h3>
+          <p className="text-slate-500 max-w-sm">
+            Check back later! New opportunities are added regularly.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project: any) => (
+            <ProjectCard 
+              key={project._id.toString()} 
+              project={{
+                _id: project._id.toString(),
+                title: project.title,
+                description: project.description,
+                status: project.status, 
+                location: project.location,
+                startDate: project.startDate,
+              }}
+              isJoined={joinedProjectIds.has(project._id.toString())}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

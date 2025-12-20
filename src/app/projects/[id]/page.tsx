@@ -1,3 +1,4 @@
+// src/app/projects/[id]/page.tsx
 import { checkRole } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import { Project } from '@/models/Project';
@@ -5,9 +6,9 @@ import { Participation } from '@/models/Participation';
 import { notFound } from 'next/navigation';
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Calendar, MapPin, Clock } from 'lucide-react';
 import Link from 'next/link';
-// Import the new Client Component
 import ProjectActionButtons from './ProjectActionButtons'; 
 
 interface PageProps {
@@ -18,11 +19,11 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
   const user = await checkRole(['volunteer']);
   await dbConnect();
 
-  // 1. Fetch Project
+  // Fetch Project
   const project = await Project.findById(params.id).lean();
   if (!project) return notFound();
 
-  // 2. Check Status
+  // Check Status
   const existingParticipation = await Participation.findOne({
     userId: user.dbId,
     projectId: params.id
@@ -30,59 +31,102 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 
   const isJoined = !!existingParticipation;
 
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      <Link href="/projects" className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 mb-6 transition-colors">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
-      </Link>
+  // Date Formatting Helper
+  const formattedDate = project.startDate 
+    ? new Date(project.startDate).toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }) 
+    : 'Date to be announced';
 
-      <div className="grid gap-8 md:grid-cols-[2fr_1fr]">
+  return (
+    <div className="max-w-5xl mx-auto px-6 py-12">
+      {/* Back Link */}
+      <div className="mb-6">
+        <Link href="/projects" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-emerald-600 transition-colors">
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
+        </Link>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-[2fr_1fr]">
         
-        {/* Left Column */}
-        <div className="space-y-6">
-          <div>
-            <div className="flex gap-2 mb-3">
-              <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
+        {/* Left Column: Project Details */}
+        <div className="space-y-8">
+          
+          {/* Header Section */}
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="capitalize">
                 {project.status}
               </Badge>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
               {project.title}
             </h1>
           </div>
 
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>Posted {new Date(project.createdAt).toLocaleDateString()}</span>
+          <Separator />
+
+          {/* Key Details Row (Location & Date) */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100">
+              <Calendar className="h-5 w-5 text-emerald-600 mt-0.5" />
+              <div>
+                <p className="font-semibold text-slate-900 text-sm">Date</p>
+                <p className="text-slate-600 text-sm">{formattedDate}</p>
+              </div>
             </div>
+
+            {project.location && (
+              <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                <MapPin className="h-5 w-5 text-emerald-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm">Location</p>
+                  <p className="text-slate-600 text-sm">{project.location}</p>
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Description */}
           <div className="prose prose-slate max-w-none">
-            <h3 className="text-xl font-semibold mb-2">Description</h3>
+            <h3 className="text-xl font-bold text-slate-900">About this Project</h3>
             <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
               {project.description}
             </p>
           </div>
         </div>
 
-        {/* Right Column */}
-        <div>
-          <Card className="sticky top-8 border-emerald-100 shadow-sm">
+        {/* Right Column: Action Card */}
+        <div className="lg:pl-4">
+          <Card className="sticky top-8 border-emerald-100 shadow-lg overflow-hidden">
+            <div className="bg-emerald-50/50 p-4 border-b border-emerald-100">
+              <h3 className="font-semibold text-emerald-900">Get Involved</h3>
+            </div>
             <CardContent className="p-6 space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-1">Take Action</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ready to make a difference?
+              <div className="space-y-1">
+                <p className="text-sm text-slate-500">
+                  {project.status === 'active' 
+                    ? "Ready to help? Join this project to confirm your attendance."
+                    : "This project is currently not accepting new volunteers."}
                 </p>
               </div>
 
-              {/* REPLACED THE FORMS WITH THIS COMPONENT */}
+              {/* ACTION BUTTONS */}
               <ProjectActionButtons 
                 projectId={project._id.toString()} 
-                isJoined={isJoined} 
+                isJoined={isJoined}
+                projectStatus={project.status}
               />
               
+              {/* Add 'Posted on' timestamp footer */}
+              <div className="pt-4 border-t text-xs text-center text-slate-400 flex items-center justify-center gap-1">
+                <Clock className="h-3 w-3" />
+                Posted {new Date(project.createdAt).toLocaleDateString()}
+              </div>
+
             </CardContent>
           </Card>
         </div>

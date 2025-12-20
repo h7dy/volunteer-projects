@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IUser extends Document {
   email: string;
   role: 'volunteer' | 'lead' | 'admin';
-  status: 'active' | 'pending' | 'rejected';
+  status: 'active' | 'pending' | 'rejected' | 'banned';
   auth0Id: string;
   createdAt: Date;
   updatedAt: Date;
@@ -23,7 +23,7 @@ const UserSchema = new Schema<IUser>(
     },
     status: {
       type: String,
-      enum: ['active', 'pending', 'rejected'],
+      enum: ['active', 'pending', 'rejected', 'banned'],
       default: 'pending',
     },
     auth0Id: {
