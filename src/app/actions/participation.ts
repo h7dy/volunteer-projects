@@ -19,24 +19,37 @@ export async function joinProject(projectId: string) {
 
     // Refresh UI
     revalidatePath('/projects');
+    revalidatePath(`/projects/${projectId}`);
     return { success: true };
+
   } catch (error: any) {
     // Handle case where already joined
     if (error.code === 11000) {
       return { success: false, message: 'You have already joined this project.' };
     }
-    return { success: false, message: 'Failed to join project.' };
+    return { success: false, message: 'Failed to join project. Please try again.' };
   }
 }
 
 export async function leaveProject(projectId: string) {
-  const user = await checkRole(['volunteer']);
+  try {
+    const user = await checkRole(['volunteer', 'lead', 'admin']);
 
-  await Participation.findOneAndDelete({
-    userId: user.dbId,
-    projectId: projectId
-  });
+    const result = await Participation.findOneAndDelete({
+      userId: user.dbId,
+      projectId: projectId
+    });
 
-  revalidatePath('/projects');
-  return { success: true };
+    if (!result) {
+      return { success: true, message: 'You were not enrolled in this project.' };
+    }
+
+    revalidatePath('/projects');
+    revalidatePath(`/projects/${projectId}`);
+    return { success: true, message: 'Successfully left the project.' };
+
+  } catch (error) {
+    console.error("Leave Error:", error);
+    return { success: false, message: 'Failed to leave project.' };
+  }
 }

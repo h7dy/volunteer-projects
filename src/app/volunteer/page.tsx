@@ -11,11 +11,11 @@ import { ArrowRight, Trophy, Clock, FolderOpen } from "lucide-react";
 
 export default async function VolunteerDashboard() {
   const user = await checkRole(['volunteer']);
-  
   await dbConnect();
 
+  // 1. Fetch Data
   const myEnrollments = await Participation.find({ userId: user.dbId })
-    .populate({ path: 'projectId', model: Project }) 
+    .populate({ path: 'projectId', model: Project })
     .lean();
 
   return (
@@ -88,22 +88,35 @@ export default async function VolunteerDashboard() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {myEnrollments.map((enrollment: any) => {
+              // SAFETY CHECK: Ensure project exists and is fully populated
               const project = enrollment.projectId;
-              if (!project) return null;
+              
+              // If project is null (deleted) or just an ID string (populate failed), skip it
+              if (!project || !project.title) return null;
 
               return (
-                <Card key={enrollment._id} className="flex flex-row items-center p-4 gap-4">
-                   <div className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                <Card key={enrollment._id.toString()} className="flex flex-row items-center p-4 gap-4">
+                   {/* FIX: 
+                      1. Wrapped entire icon box in Link
+                      2. Used .toString() on ID to be safe
+                   */}
+                   <Link href={`/projects/${project._id.toString()}`} className="shrink-0">
+                    <div className="h-12 w-12 rounded-lg bg-emerald-100 flex items-center justify-center hover:bg-emerald-200 transition-colors">
                       <span className="font-bold text-emerald-700 text-lg">
-                        {project.title ? project.title.charAt(0) : "P"}
+                        {project.title.charAt(0)}
                       </span>
-                   </div>
+                    </div>
+                   </Link>
+
                    <div className="flex-1 min-w-0">
-                     <h4 className="font-semibold truncate">{project.title}</h4>
+                     <Link href={`/projects/${project._id.toString()}`} className="hover:underline">
+                        <h4 className="font-semibold truncate">{project.title}</h4>
+                     </Link>
                      <p className="text-sm text-muted-foreground capitalize">
                        Status: {enrollment.status}
                      </p>
                    </div>
+
                    <Badge variant={enrollment.status === 'accepted' ? 'default' : 'secondary'}>
                      {enrollment.status}
                    </Badge>

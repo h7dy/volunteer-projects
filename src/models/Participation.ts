@@ -5,6 +5,8 @@ export interface IParticipation extends Document {
   projectId: mongoose.Types.ObjectId;
   role: string; // e.g., 'developer', 'designer'
   status: 'accepted' | 'completed' | 'rejected' | 'pending';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ParticipationSchema = new Schema<IParticipation>({

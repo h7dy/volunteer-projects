@@ -5,6 +5,8 @@ export interface IProject extends Document {
   description: string;
   leadId: mongoose.Types.ObjectId; // Link to Lead User
   status: 'active' | 'completed' | 'archived' | 'draft';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const ProjectSchema = new Schema<IProject>({
