@@ -2,7 +2,7 @@ import { checkRole } from '@/lib/auth';
 
 export default async function AdminDashboard() {
   // Only allow leads/admins (need to decide later)
-  const user = await checkRole(['admin', 'lead']);
+  const user = await checkRole(['admin']);
 
   return (
     <div className="max-w-5xl mx-auto p-8 border-l-4 border-red-500 bg-red-50">

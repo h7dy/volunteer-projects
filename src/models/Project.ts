@@ -4,7 +4,7 @@ export interface IProject extends Document {
   title: string;
   description: string;
   leadId: mongoose.Types.ObjectId; // Link to Lead User
-  status: 'active' | 'completed' | 'archived' | 'draft';
+  status: 'active' | 'completed' | 'draft';
   location?: string; 
   startDate?: Date;  
   createdAt: Date;
@@ -21,7 +21,7 @@ const ProjectSchema = new Schema<IProject>({
   },
   status: { 
     type: String, 
-    enum: ['active', 'completed', 'archived', 'draft'], 
+    enum: ['active', 'completed', 'draft'], 
     default: 'draft' 
   },
   location: { type: String, required: false },

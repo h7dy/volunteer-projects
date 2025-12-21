@@ -4,6 +4,11 @@ import Link from 'next/link';
 export default async function Navbar() {
   const user = await getAuthUser();
 
+  // Helper to determine the dashboard link
+  let dashboardUrl = '/volunteer';
+  if (user?.role === 'admin') dashboardUrl = '/admin';
+  if (user?.role === 'lead') dashboardUrl = '/lead';
+
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
@@ -19,13 +24,21 @@ export default async function Navbar() {
         <div className="flex items-center gap-6 text-sm font-medium">
           {!user ? (
             <>
-               <a href="/auth/login" className="text-slate-600 hover:text-emerald-600 transition-colors">Sign In</a>
-               <a href="/auth/login" className="btn-primary text-sm px-5">Get Started</a>
+               <Link href="/auth/login" className="text-slate-600 hover:text-emerald-600 transition-colors">Sign In</Link>
+               <Link href="/auth/register" className="btn-primary text-sm px-5">Get Started</Link>
             </>
           ) : (
             <>
-              <Link href="/projects" className="text-slate-600 hover:text-emerald-600 transition-colors">Projects</Link>
-              <Link href={user.role === 'admin' ? '/admin' : '/volunteer'} className="text-slate-600 hover:text-emerald-600 transition-colors">Dashboard</Link>
+              {/* Only 'volunteer' role sees the browse page */}
+              {user.role === 'volunteer' && (
+                <Link href="/projects" className="text-slate-600 hover:text-emerald-600 transition-colors">
+                  Browse Projects
+                </Link>
+              )}
+              
+              <Link href={dashboardUrl} className="text-slate-600 hover:text-emerald-600 transition-colors">
+                Dashboard
+              </Link>
               
               <div className="h-6 w-px bg-slate-200 mx-2"></div>
               
