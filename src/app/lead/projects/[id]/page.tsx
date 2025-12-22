@@ -1,0 +1,178 @@
+import { checkRole } from '@/lib/auth';
+import dbConnect from '@/lib/db';
+import { Project } from '@/models/Project';
+import { Participation } from '@/models/Participation';
+import User from '@/models/User'; 
+import { notFound } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  ArrowLeft, 
+  Calendar, 
+  MapPin, 
+  Mail, 
+  AlignLeft
+} from "lucide-react";
+import Link from 'next/link';
+
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ProjectManagePage({ params }: PageProps) {
+  const { id } = await params;
+  const user = await checkRole(['lead', 'admin']);
+  
+  await dbConnect();
+
+  const project = await Project.findOne({ 
+    _id: id, 
+    leadId: user.dbId 
+  }).lean();
+
+  if (!project) {
+    return notFound();
+  }
+
+  const enrollments = await Participation.find({ projectId: id })
+    .populate({
+      path: 'userId',
+      model: User,
+      select: 'name email'
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      {/* Top Navigation & Header */}
+      <div className="mb-8">
+        <Link 
+          href="/lead" 
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 mb-4 transition-colors"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+        </Link>
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">{project.title}</h1>
+            <p className="text-muted-foreground text-sm mt-1">Project ID: {project._id.toString()}</p>
+          </div>
+          <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="capitalize px-4 py-1 text-sm">
+            {project.status}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT COLUMN: Project Details */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Description */}
+              <div className="space-y-2">
+                <div className="flex items-center text-sm font-medium text-muted-foreground">
+                  <AlignLeft className="h-4 w-4 mr-2" /> Description
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  {project.description || "No description provided."}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Date */}
+              <div className="space-y-2">
+                <div className="flex items-center text-sm font-medium text-muted-foreground">
+                  <Calendar className="h-4 w-4 mr-2" /> Date
+                </div>
+                <p className="text-sm font-medium">
+                  {project.startDate ? new Date(project.startDate).toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  }) : 'TBD'}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Location */}
+              <div className="space-y-2">
+                 <div className="flex items-center text-sm font-medium text-muted-foreground">
+                  <MapPin className="h-4 w-4 mr-2" /> Location
+                </div>
+                <p className="text-sm font-medium">{project.location || 'TBD'}</p>
+              </div>
+
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* RIGHT COLUMN: Volunteers List */}
+        <div className="lg:col-span-2">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Volunteers ({enrollments.length})</CardTitle>
+              <CardDescription>
+                Manage participation and track attendance.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {enrollments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-lg border-slate-200 bg-slate-50">
+                  <div className="p-3 rounded-full bg-white shadow-sm mb-3">
+                    <Mail className="h-6 w-6 text-slate-300" />
+                  </div>
+                  <h3 className="text-sm font-medium text-slate-900">No volunteers yet</h3>
+                  <p className="text-sm text-slate-500 max-w-xs mt-1">
+                    Once users join this project, they will appear in this list.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 font-medium text-slate-500">Volunteer Name</th>
+                        <th className="px-4 py-3 font-medium text-slate-500">Email</th>
+                        <th className="px-4 py-3 font-medium text-slate-500">Joined Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {enrollments.map((enrollment: any) => (
+                        <tr key={enrollment._id.toString()} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-slate-900">{enrollment.userId?.name || 'Unknown User'}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-xs text-slate-500 flex items-center gap-1">
+                               <Mail className="h-3 w-3" /> {enrollment.userId?.email}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                            {new Date(enrollment.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+      </div>
+    </div>
+  );
+}

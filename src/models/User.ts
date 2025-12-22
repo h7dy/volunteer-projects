@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IUser extends Document {
+  name: string;
   email: string;
   role: 'volunteer' | 'lead' | 'admin';
   status: 'active' | 'pending' | 'rejected' | 'banned';
@@ -11,6 +12,9 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>(
   {
+    name: {
+      type: String
+    },
     email: {
       type: String,
       required: [true, 'Please provide an email'],

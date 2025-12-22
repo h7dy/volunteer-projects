@@ -39,6 +39,10 @@ export default async function Navbar() {
               <Link href={dashboardUrl} className="text-slate-600 hover:text-emerald-600 transition-colors">
                 Dashboard
               </Link>
+
+              <Link href="/settings" className="text-slate-600 hover:text-emerald-600 transition-colors">
+                Settings
+              </Link>
               
               <div className="h-6 w-px bg-slate-200 mx-2"></div>
               
