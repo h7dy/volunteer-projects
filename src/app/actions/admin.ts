@@ -41,6 +41,20 @@ export async function updateUserRole(userId: string, newRole: string) {
   return { success: "Role updated" };
 }
 
+// Reject lead access
+export async function rejectLeadAccess(userId: string) {
+  await checkRole(['admin']);
+  await dbConnect();
+
+  await User.findByIdAndUpdate(userId, { 
+    hasRequestedLeadAccess: false, // Clear the active request
+    isLeadAccessRejected: true     // Mark as permanently rejected
+  });
+  
+  revalidatePath('/admin/users');
+  return { success: "Request rejected." };
+}
+
 // Ban/Unban User
 export async function toggleUserBan(userId: string, currentStatus: string) {
   const admin = await checkRole(['admin']);

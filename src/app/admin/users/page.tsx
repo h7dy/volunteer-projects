@@ -1,13 +1,22 @@
+// src/app/admin/users/page.tsx
 import { checkRole } from '@/lib/auth';
 import { getUsers } from '@/app/actions/admin';
 import Link from 'next/link';
-import { ArrowLeft, Mail, Shield, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Mail, Shield, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { UserActions } from './userActions';
 
 export default async function UserManagementPage() {
   const currentUser = await checkRole(['admin']);
-  const users = await getUsers();
+  
+  // Sort users: Requests first, then by date
+  let users = await getUsers();
+  users = users.sort((a: any, b: any) => {
+    if (a.hasRequestedLeadAccess === b.hasRequestedLeadAccess) {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    return a.hasRequestedLeadAccess ? -1 : 1;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -31,38 +40,55 @@ export default async function UserManagementPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {users.map((user: any) => (
-              <tr key={user._id.toString()} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-slate-900">{user.name || "No Name Set"}</div>
-                  <div className="text-xs text-slate-500 flex items-center gap-1">
-                    <Mail className="h-3 w-3" /> {user.email}
-                  </div>
-                </td>
-                <td className="px-4 py-3">
-                   <div className="flex items-center gap-2">
-                    {user.role === 'admin' ? <Shield className="h-3 w-3 text-purple-600" /> : <UserIcon className="h-3 w-3 text-slate-400" />}
-                    <span className="capitalize">{user.role}</span>
-                   </div>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={user.status === 'banned' ? 'destructive' : 'outline'} className="capitalize">
-                    {user.status || 'active'}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3 text-slate-500">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <UserActions 
-                    userId={user._id.toString()} 
-                    currentRole={user.role} 
-                    currentStatus={user.status || 'active'}
-                    isCurrentUser={user._id.toString() === currentUser.dbId}
-                  />
-                </td>
-              </tr>
-            ))}
+            {users.map((user: any) => {
+              // Check if this specific user is a volunteer asking for promotion
+              const isRequesting = user.hasRequestedLeadAccess && user.role === 'volunteer';
+
+              return (
+                <tr 
+                  key={user._id.toString()} 
+                  className={`transition-colors ${isRequesting ? "bg-amber-50/60 hover:bg-amber-100/50" : "hover:bg-slate-50"}`}
+                >
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-slate-900 flex items-center gap-2">
+                      {user.name || "No Name Set"}
+                      {/* VISUAL INDICATOR FOR ADMINS */}
+                      {isRequesting && (
+                        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] h-5 px-1.5 gap-1">
+                           <AlertCircle className="h-3 w-3" /> Requesting Lead
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                      <Mail className="h-3 w-3" /> {user.email}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                     <div className="flex items-center gap-2">
+                      {user.role === 'admin' ? <Shield className="h-3 w-3 text-purple-600" /> : <UserIcon className="h-3 w-3 text-slate-400" />}
+                      <span className="capitalize">{user.role}</span>
+                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant={user.status === 'banned' ? 'destructive' : 'outline'} className="capitalize">
+                      {user.status || 'active'}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <UserActions 
+                      userId={user._id.toString()} 
+                      currentRole={user.role} 
+                      currentStatus={user.status || 'active'}
+                      isCurrentUser={user._id.toString() === currentUser.dbId}
+                      hasRequestedLeadAccess={isRequesting}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

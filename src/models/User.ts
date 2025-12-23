@@ -5,6 +5,13 @@ export interface IUser extends Document {
   email: string;
   role: 'volunteer' | 'lead' | 'admin';
   status: 'active' | 'banned';
+  hasRequestedLeadAccess: boolean;
+  isLeadAccessRejected: boolean;
+  reports: Array<{
+    reporterId: mongoose.Types.ObjectId;
+    reason: string;
+    date: Date;
+  }>;
   auth0Id: string;
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +37,18 @@ const UserSchema = new Schema<IUser>(
       enum: ['active', 'banned'],
       default: 'active',
     },
+    hasRequestedLeadAccess: {
+      type: Boolean, 
+      default: false 
+    },
+    isLeadAccessRejected: {
+      type: Boolean, default: false
+    },
+    reports: [{
+      reporterId: { type: Schema.Types.ObjectId, ref: 'User' },
+      reason: String,
+      date: { type: Date, default: Date.now }
+    }],
     auth0Id: {
       type: String,
       required: true, // Required as we rely on this for syncing

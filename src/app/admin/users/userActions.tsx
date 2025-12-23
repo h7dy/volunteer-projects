@@ -9,17 +9,24 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ShieldAlert, UserCog, Ban } from "lucide-react";
-import { updateUserRole, toggleUserBan } from "@/app/actions/admin";
+import { MoreHorizontal, ShieldAlert, UserCog, Ban, CheckCircle, XCircle } from "lucide-react";
+import { updateUserRole, toggleUserBan, rejectLeadAccess } from "@/app/actions/admin";
 
 interface UserActionsProps {
   userId: string;
   currentRole: string;
   currentStatus: string;
   isCurrentUser: boolean;
+  hasRequestedLeadAccess?: boolean; 
 }
 
-export function UserActions({ userId, currentRole, currentStatus, isCurrentUser }: UserActionsProps) {
+export function UserActions({ 
+  userId, 
+  currentRole, 
+  currentStatus, 
+  isCurrentUser,
+  hasRequestedLeadAccess = false
+}: UserActionsProps) {
   
   if (isCurrentUser) {
     return <span className="text-xs text-muted-foreground italic">Current User</span>;
@@ -43,6 +50,12 @@ export function UserActions({ userId, currentRole, currentStatus, isCurrentUser 
     else alert("Failed to update status");
   };
 
+  const handleReject = async () => {
+    if(!confirm("Are you sure you want to permanently decline this request?")) return;
+    const result = await rejectLeadAccess(userId);
+    if (result.success) alert("Request rejected");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -54,6 +67,21 @@ export function UserActions({ userId, currentRole, currentStatus, isCurrentUser 
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         
+        {hasRequestedLeadAccess && currentRole === 'volunteer' && (
+          <>
+            <DropdownMenuItem onClick={() => handleRoleChange('lead')} className="bg-emerald-50 text-emerald-700 focus:bg-emerald-100 cursor-pointer mb-1">
+                <CheckCircle className="mr-2 h-4 w-4" /> Approve Lead Access
+            </DropdownMenuItem>
+            
+            {/* NEW: REJECT BUTTON */}
+            <DropdownMenuItem onClick={handleReject} className="bg-red-50 text-red-700 focus:bg-red-100 cursor-pointer">
+                <XCircle className="mr-2 h-4 w-4" /> Reject Request
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+          </>
+        )}
+
         <DropdownMenuSeparator />
         
         {/* Role Management */}
