@@ -4,7 +4,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   role: 'volunteer' | 'lead' | 'admin';
-  status: 'active' | 'pending' | 'rejected' | 'banned';
+  status: 'active' | 'banned';
   auth0Id: string;
   createdAt: Date;
   updatedAt: Date;
@@ -27,8 +27,8 @@ const UserSchema = new Schema<IUser>(
     },
     status: {
       type: String,
-      enum: ['active', 'pending', 'rejected', 'banned'],
-      default: 'pending',
+      enum: ['active', 'banned'],
+      default: 'active',
     },
     auth0Id: {
       type: String,

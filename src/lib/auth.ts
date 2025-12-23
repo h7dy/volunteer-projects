@@ -67,6 +67,10 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/auth/login');
   }
 
+  if (user.status === 'banned') {
+    redirect('/banned'); // You'll need to create a simple /app/banned/page.tsx
+  }
+
   // If logged in but wrong role, send to unauthorized
   if (!allowedRoles.includes(user.role)) {
     redirect('/unauthorized');
