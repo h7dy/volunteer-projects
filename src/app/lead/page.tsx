@@ -13,7 +13,7 @@ import { DeleteProjectButton } from './DeleteProjectButton';
 export const dynamic = 'force-dynamic';
 
 export default async function LeadDashboard() {
-  const user = await checkRole(['lead', 'admin']);
+  const user = await checkRole(['lead']);
   await dbConnect();
 
   // Fetch projects owned by this lead

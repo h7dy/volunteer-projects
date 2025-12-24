@@ -33,7 +33,6 @@ export default async function Navbar() {
                 Dashboard
               </Link>
 
-              {/* Only 'volunteer' role sees the browse page */}
               {user.role === 'volunteer' && (
                 <Link href="/projects" className="text-slate-600 hover:text-emerald-600 transition-colors">
                   Browse Projects
@@ -43,6 +42,12 @@ export default async function Navbar() {
               {user.role === 'admin' && (
                 <Link href="/admin/users" className="text-slate-600 hover:text-emerald-600 transition-colors">
                   User Management
+                </Link>
+              )}
+
+              {user.role === 'admin' && (
+                <Link href="/admin/projects" className="text-slate-600 hover:text-emerald-600 transition-colors">
+                  All Projects
                 </Link>
               )}
 

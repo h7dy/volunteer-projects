@@ -3,19 +3,21 @@ import dbConnect from '@/lib/db';
 import { Project } from '@/models/Project';
 import { Participation } from '@/models/Participation';
 import User from '@/models/User'; 
-import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { 
   ArrowLeft, 
   Calendar, 
   MapPin, 
   Mail, 
-  AlignLeft
+  AlignLeft,
+  Edit
 } from "lucide-react";
 import Link from 'next/link';
 import { ReportVolunteerDialog } from "./reportVolunteerDialog";
+import { notFound, redirect } from 'next/navigation';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -27,13 +29,24 @@ export default async function ProjectManagePage({ params }: PageProps) {
   
   await dbConnect();
 
-  const project = await Project.findOne({ 
-    _id: id, 
-    leadId: user.dbId 
-  }).lean();
+// Find project by ID only
+  const project = await Project.findById(id).lean();
 
   if (!project) {
     return notFound();
+  }
+
+// Verify Owner OR Admin
+  const isOwner = project.leadId.toString() === user.dbId;
+  const isAdmin = user.role === 'admin';
+  let showActions = true;
+
+  if (!isOwner && !isAdmin) {
+    redirect("/unauthorized");
+  }
+
+  if (isAdmin) {
+    showActions = false;
   }
 
   const enrollments = await Participation.find({ projectId: id })
@@ -45,30 +58,40 @@ export default async function ProjectManagePage({ params }: PageProps) {
     .sort({ createdAt: -1 })
     .lean();
 
+  // If Admin, go to Admin Projects. If Lead, go to Lead Dashboard.
+  const backLink = isAdmin ? "/admin/projects" : "/lead";
+  const backText = isAdmin ? "Back to Admin Oversight" : "Back to Dashboard";
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Top Navigation & Header */}
       <div className="mb-8">
         <Link 
-          href="/lead" 
+          href={backLink} 
           className="inline-flex items-center text-sm text-muted-foreground hover:text-emerald-600 mb-4 transition-colors"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          <ArrowLeft className="mr-2 h-4 w-4" /> {backText}
         </Link>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">{project.title}</h1>
-            <p className="text-muted-foreground text-sm mt-1">Project ID: {project._id.toString()}</p>
           </div>
-          <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="capitalize px-4 py-1 text-sm">
-            {project.status}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/lead/projects/${id}/edit`}>
+                <Edit className="h-4 w-4 mr-2" /> Edit Project
+              </Link>
+            </Button>
+
+            <Badge variant={project.status === 'active' ? 'default' : 'secondary'} className="capitalize px-4 py-1 text-sm">
+              {project.status}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* LEFT COLUMN: Project Details */}
         <div className="lg:col-span-1 space-y-6">
@@ -147,7 +170,7 @@ export default async function ProjectManagePage({ params }: PageProps) {
                         <th className="px-4 py-3 font-medium text-slate-500">Volunteer Name</th>
                         <th className="px-4 py-3 font-medium text-slate-500">Email</th>
                         <th className="px-4 py-3 font-medium text-slate-500">Joined Date</th>
-                        <th className="px-4 py-3 font-medium text-slate-500 text-right">Actions</th>
+                        {showActions && (<th className="px-4 py-3 font-medium text-slate-500 text-right">Actions</th>)}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
@@ -164,13 +187,13 @@ export default async function ProjectManagePage({ params }: PageProps) {
                           <td className="px-4 py-3 text-slate-500">
                             {new Date(enrollment.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          {showActions && (<td className="px-4 py-3 text-right">
                             <ReportVolunteerDialog 
                               volunteerId={enrollment.userId?._id.toString()} 
                               volunteerName={enrollment.userId?.name || "User"}
                               projectId={id} 
                             />
-                          </td>
+                          </td>)}
                         </tr>
                       ))}
                     </tbody>

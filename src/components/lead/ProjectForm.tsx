@@ -27,7 +27,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
         } else {
           await createProject(formData);
         }
-        router.push('/lead');
+        router.push(`/lead/projects/${project._id}`);
       } catch (error) {
         console.error(error);
         alert("Something went wrong");
@@ -42,6 +42,8 @@ export default function ProjectForm({ project }: ProjectFormProps) {
 
   // LOGIC: Allow 'draft' only if creating new OR currently draft
   const showDraftOption = !project || project.status === 'draft';
+
+  const cancelLink = `/lead/projects/${project._id}`;
 
   return (
     <form action={handleSubmit} className="space-y-6 max-w-2xl">
@@ -96,7 +98,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
           {project ? 'Update Project' : 'Create Project'}
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/lead">Cancel</Link>
+          <Link href={cancelLink}>Cancel</Link>
         </Button>
       </div>
     </form>

@@ -4,6 +4,25 @@ import { checkRole } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import { Project } from '@/models/Project';
 import { revalidatePath } from 'next/cache';
+import User from "@/models/User";
+
+// READ ALL (ADMIN)
+export async function getAllProjectsForAdmin() {
+  await checkRole(['admin']);
+  await dbConnect();
+
+  const projects = await Project.find({})
+    .populate({ path: 'leadId', model: User, select: 'name email' })
+    .sort({ createdAt: -1 })
+    .lean();
+    
+  return projects.map((p: any) => ({
+    ...p,
+    _id: p._id.toString(),
+    leadId: p.leadId ? { ...p.leadId, _id: p.leadId._id.toString() } : null,
+    leadName: p.leadId?.name || "Unknown Lead" 
+  }));
+}
 
 // --- CREATE ---
 export async function createProject(formData: FormData) {
@@ -65,6 +84,8 @@ export async function updateProject(projectId: string, formData: FormData) {
   });
 
   revalidatePath('/lead');
+  revalidatePath('/projects');
+  revalidatePath('admin/projects');
   revalidatePath(`/lead/projects/${projectId}`);
 }
 
@@ -78,12 +99,13 @@ export async function deleteProject(projectId: string) {
 
   // Ownership Check
   if (user.role !== 'admin' && project.leadId.toString() !== user.dbId) {
-    throw new Error("Unauthorized: You do not own this project.");
+    throw new Error("Unauthorized.");
   }
 
   await Project.findByIdAndDelete(projectId);
   
   revalidatePath('/lead');
   revalidatePath('/projects');
+  revalidatePath('/admin/projects')
   return { success: true };
 }
