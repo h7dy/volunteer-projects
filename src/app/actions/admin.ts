@@ -22,9 +22,18 @@ export async function getAdminStats() {
 export async function getUsers() {
   await checkRole(['admin']);
   await dbConnect();
-  
-  // Sort by newest first
-  return await User.find({}).sort({ createdAt: -1 }).lean();
+
+  // Find query to populate the project details inside reports
+  const users = await User.find({})
+    .populate({
+      path: 'reports.projectId', 
+      model: 'Project',
+      select: 'title _id'
+    })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return users;
 }
 
 // Update User Role

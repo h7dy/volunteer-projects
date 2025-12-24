@@ -1,21 +1,32 @@
-// src/app/admin/users/page.tsx
 import { checkRole } from '@/lib/auth';
 import { getUsers } from '@/app/actions/admin';
 import Link from 'next/link';
 import { ArrowLeft, Mail, Shield, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { UserActions } from './userActions';
+import { ViewReportsDialog } from "./viewReportsDialog"; // <--- IMPORT
 
 export default async function UserManagementPage() {
   const currentUser = await checkRole(['admin']);
   
-  // Sort users: Requests first, then by date
   let users = await getUsers();
+
+  // Priority: Lead Requests -> Reported Users -> Newest Users
   users = users.sort((a: any, b: any) => {
-    if (a.hasRequestedLeadAccess === b.hasRequestedLeadAccess) {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    return a.hasRequestedLeadAccess ? -1 : 1;
+    // A. Check Lead Requests
+    const aReq = a.hasRequestedLeadAccess && a.role === 'volunteer';
+    const bReq = b.hasRequestedLeadAccess && b.role === 'volunteer';
+    if (aReq && !bReq) return -1;
+    if (!aReq && bReq) return 1;
+
+    // B. Check Reports (If requests are equal, prioritize flagged users)
+    const aReports = a.reports?.length || 0;
+    const bReports = b.reports?.length || 0;
+    if (aReports > 0 && bReports === 0) return -1;
+    if (aReports === 0 && bReports > 0) return 1;
+
+    // C. Default to Date
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return (
@@ -40,23 +51,48 @@ export default async function UserManagementPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {users.map((user: any) => {
-              // Check if this specific user is a volunteer asking for promotion
-              const isRequesting = user.hasRequestedLeadAccess && user.role === 'volunteer';
+              {users.map((user: any) => {
+                const isRequesting = user.hasRequestedLeadAccess && user.role === 'volunteer';
+                // Check if user has reports
+                const hasReports = user.reports && user.reports.length > 0;
+                const sanitizedReports = user.reports?.map((report: any) => {
+                // Handle cases where the project might have been deleted (null)
+                const project = report.projectId; 
+                
+                return {
+                  _id: report._id.toString(),
+                  reason: report.reason,
+                  date: new Date(report.date).toISOString(),
+                  reporterId: report.reporterId?.toString() || "Unknown",
+                  
+                  // Extract Title and ID safely
+                  projectTitle: project?.title || "Unknown Project", 
+                  projectId: project?._id?.toString() || null, 
+                };
+              }) || [];
+              
+              // Style logic
+              let rowClass = "hover:bg-slate-50";
+              if (isRequesting) rowClass = "bg-amber-50/60 hover:bg-amber-100/50";
+              else if (hasReports) rowClass = "bg-red-50/30 hover:bg-red-50/60";
 
               return (
-                <tr 
-                  key={user._id.toString()} 
-                  className={`transition-colors ${isRequesting ? "bg-amber-50/60 hover:bg-amber-100/50" : "hover:bg-slate-50"}`}
-                >
+                <tr key={user._id.toString()} className={`transition-colors ${rowClass}`}>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900 flex items-center gap-2">
+                    <div className="font-medium text-slate-900 flex items-center gap-2 flex-wrap">
                       {user.name || "No Name Set"}
-                      {/* VISUAL INDICATOR FOR ADMINS */}
+                      
                       {isRequesting && (
                         <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] h-5 px-1.5 gap-1">
                            <AlertCircle className="h-3 w-3" /> Requesting Lead
                         </Badge>
+                      )}
+
+                      {hasReports && (
+                        <ViewReportsDialog 
+                          reports={sanitizedReports} 
+                          userName={user.name || 'User'} 
+                        />
                       )}
                     </div>
                     <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
