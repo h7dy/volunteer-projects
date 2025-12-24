@@ -15,6 +15,7 @@ import {
   AlignLeft
 } from "lucide-react";
 import Link from 'next/link';
+import { ReportVolunteerDialog } from "./reportVolunteerDialog";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -146,6 +147,7 @@ export default async function ProjectManagePage({ params }: PageProps) {
                         <th className="px-4 py-3 font-medium text-slate-500">Volunteer Name</th>
                         <th className="px-4 py-3 font-medium text-slate-500">Email</th>
                         <th className="px-4 py-3 font-medium text-slate-500">Joined Date</th>
+                        <th className="px-4 py-3 font-medium text-slate-500 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
@@ -161,6 +163,13 @@ export default async function ProjectManagePage({ params }: PageProps) {
                           </td>
                           <td className="px-4 py-3 text-slate-500">
                             {new Date(enrollment.createdAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <ReportVolunteerDialog 
+                              volunteerId={enrollment.userId?._id.toString()} 
+                              volunteerName={enrollment.userId?.name || "User"}
+                              projectId={id} 
+                            />
                           </td>
                         </tr>
                       ))}

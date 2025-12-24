@@ -17,3 +17,4 @@ ParticipationSchema.index({ userId: 1, projectId: 1 }, { unique: true });
 
 export const Participation: Model<IParticipation> = 
   mongoose.models.Participation || mongoose.model<IParticipation>('Participation', ParticipationSchema);
+export default Participation;

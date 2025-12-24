@@ -10,6 +10,7 @@ export interface IUser extends Document {
   reports: Array<{
     reporterId: mongoose.Types.ObjectId;
     reason: string;
+    projectId: mongoose.Types.ObjectId;
     date: Date;
   }>;
   auth0Id: string;
@@ -47,6 +48,7 @@ const UserSchema = new Schema<IUser>(
     reports: [{
       reporterId: { type: Schema.Types.ObjectId, ref: 'User' },
       reason: String,
+      projectId: { type: Schema.Types.ObjectId, ref: 'Project'},
       date: { type: Date, default: Date.now }
     }],
     auth0Id: {
