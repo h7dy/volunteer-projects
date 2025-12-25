@@ -2,7 +2,7 @@ import { checkRole } from '@/lib/auth';
 import { getAdminStats } from '@/app/actions/admin';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FolderKanban, Activity, ShieldAlert } from "lucide-react";
+import { Briefcase, UserCog, Users, Flag, UserPlus, TrendingUp, ShieldAlert } from "lucide-react";
 import { Button } from '@/components/ui/button';
 
 export default async function AdminDashboard() {
@@ -28,7 +28,7 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <Users className="h-4 w-4 text-slate-500" />
+            <Briefcase className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalProjects}</div>
@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-            <FolderKanban className="h-4 w-4 text-slate-500" />
+            <UserCog className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalLeads}</div>
@@ -48,10 +48,43 @@ export default async function AdminDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Volunteers</CardTitle>
-            <Activity className="h-4 w-4 text-slate-500" />
+            <Users className="h-4 w-4 text-indigo-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVolunteers}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Stats Grid 2*/}
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Flagged Users</CardTitle>
+            <Flag className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalFlagged}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Lead Requests</CardTitle>
+            <UserPlus className="h-4 w-4 text-amber-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalLeadRequests}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Recent Signups (30 Days)</CardTitle>
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalRecent}</div>
           </CardContent>
         </Card>
       </div>

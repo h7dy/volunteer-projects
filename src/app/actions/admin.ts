@@ -11,11 +11,33 @@ export async function getAdminStats() {
   await checkRole(['admin']);
   await dbConnect();
 
-  const totalProjects = await Project.countDocuments();
-  const totalLeads = await User.countDocuments({ role: "lead"});
-  const totalVolunteers = await User.countDocuments({ role: "volunteer"});
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  return { totalProjects, totalLeads, totalVolunteers };
+  const [
+    totalProjects,
+    totalLeads,
+    totalVolunteers,
+    totalFlagged,
+    totalLeadRequests,
+    totalRecent
+  ] = await Promise.all([
+    Project.countDocuments(),
+    User.countDocuments({ role: "lead" }),
+    User.countDocuments({ role: "volunteer" }),
+    User.countDocuments({ "reports.0": { "$exists": true } }),
+    User.countDocuments({ hasRequestedLeadAccess: true, role: 'volunteer' }),
+    User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } })
+  ]);
+
+  return { 
+    totalProjects, 
+    totalLeads, 
+    totalVolunteers, 
+    totalFlagged, 
+    totalLeadRequests, 
+    totalRecent 
+  };
 }
 
 // Get All Users
