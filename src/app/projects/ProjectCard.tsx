@@ -13,7 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Leaf, Check, MapPin, Calendar, XCircle } from "lucide-react";
+import { Loader2, Leaf, Check, MapPin, Calendar } from "lucide-react";
+import { CapacityBadge } from "@/components/capacityBadge";
 
 interface ProjectCardProps {
   project: {
@@ -22,7 +23,9 @@ interface ProjectCardProps {
     description: string;
     status: string;
     location?: string;
-    startDate?: Date;
+    startDate?: Date | string;
+    capacity?: number | null;
+    enrolledCount: number;
   };
   isJoined: boolean;
 }
@@ -38,8 +41,12 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
     ? new Date(project.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
+  // Helper: Check Capacity
+  const isFull = project.capacity ? project.enrolledCount >= project.capacity : false;
+
   const handleToggle = () => {
-    if (!isActive && !isJoined) return; // Prevent joining closed projects
+    // Prevent joining if closed OR (full AND not already joined)
+    if ((!isActive || isFull) && !isJoined) return;
 
     startTransition(async () => {
       if (isJoined) {
@@ -57,7 +64,7 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
     `}>
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div className="space-y-1">
+          <div className="space-y-1 w-full mr-2">
             <CardTitle className="text-xl flex items-center gap-2">
               <Link 
                 href={`/projects/${project._id}`} 
@@ -67,8 +74,14 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
               </Link>
             </CardTitle>
             
-            {/* STATUS BADGES */}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 pt-1 items-center">
+              {/* CAPACITY BADGE */}
+              <CapacityBadge 
+                current={project.enrolledCount} 
+                max={project.capacity} 
+              />
+
+              {/* STATUS BADGES */}
               {isJoined && (
                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
                   <Check className="w-3 h-3 mr-1" /> Enrolled
@@ -119,9 +132,10 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
 
         <Button 
           onClick={handleToggle}
-          disabled={isPending || (!isActive && !isJoined)} 
+          // Disable if: Pending OR (Not Joined AND (Not Active OR Full))
+          disabled={isPending || (!isJoined && (!isActive || isFull))} 
           variant={isJoined ? "destructive" : "default"}
-          className={`flex-1 ${!isJoined && isActive ? "bg-slate-900 hover:bg-slate-800" : ""}`}
+          className={`flex-1 ${!isJoined && isActive && !isFull ? "bg-slate-900 hover:bg-slate-800" : ""}`}
         >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -129,6 +143,8 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
             "Leave"
           ) : !isActive ? (
             "Closed"
+          ) : isFull ? (
+            "Full"
           ) : (
             "Join"
           )}

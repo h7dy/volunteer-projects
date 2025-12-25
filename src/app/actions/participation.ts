@@ -23,9 +23,19 @@ export async function joinProject(projectId: string) {
       return { success: false, message: 'This project is not currently accepting volunteers.' };
     }
 
+    const currentCount = project.enrolledCount || 0;
+
+    if (project.capacity && currentCount >= project.capacity) {
+      return { success: false, message: 'This project is currently at max capacity.'}
+    }
+
     await Participation.create({
       userId: user.dbId,
-      projectId: projectId,
+      projectId: projectId
+    });
+
+    await Project.findByIdAndUpdate(projectId, { 
+      $inc: { enrolledCount: 1 } 
     });
 
     // Refresh UI (Project Page + Dashboard)
@@ -54,6 +64,13 @@ export async function leaveProject(projectId: string) {
       userId: user.dbId,
       projectId: projectId
     });
+
+    if (result) {
+      await Project.findOneAndUpdate(
+        { _id: projectId, enrolledCount: { $gt: 0 } },
+        { $inc: { enrolledCount: -1 } } 
+      );
+    }
 
     if (!result) {
       return { success: true, message: 'You were not enrolled in this project.' };

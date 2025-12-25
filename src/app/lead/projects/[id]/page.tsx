@@ -13,11 +13,13 @@ import {
   MapPin, 
   Mail, 
   AlignLeft,
-  Edit
+  Edit,
+  Users
 } from "lucide-react";
 import Link from 'next/link';
 import { ReportVolunteerDialog } from "./reportVolunteerDialog";
 import { notFound, redirect } from 'next/navigation';
+import { CapacityBadge } from "@/components/capacityBadge";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,14 +31,14 @@ export default async function ProjectManagePage({ params }: PageProps) {
   
   await dbConnect();
 
-// Find project by ID only
+  // Find project by ID only
   const project = await Project.findById(id).lean();
 
   if (!project) {
     return notFound();
   }
 
-// Verify Owner OR Admin
+  // Verify Owner OR Admin
   const isOwner = project.leadId.toString() === user.dbId;
   const isAdmin = user.role === 'admin';
   let showActions = true;
@@ -62,6 +64,10 @@ export default async function ProjectManagePage({ params }: PageProps) {
   const backLink = isAdmin ? "/admin/projects" : "/lead";
   const backText = isAdmin ? "Back to Admin Oversight" : "Back to Dashboard";
 
+  // Counts
+  const currentCount = enrollments.length;
+  const capacity = project.capacity;
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Top Navigation & Header */}
@@ -77,7 +83,9 @@ export default async function ProjectManagePage({ params }: PageProps) {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">{project.title}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <CapacityBadge current={currentCount} max={capacity} />
+
             <Button variant="outline" size="sm" asChild>
               <Link href={`/lead/projects/${id}/edit`}>
                 <Edit className="h-4 w-4 mr-2" /> Edit Project
@@ -109,6 +117,23 @@ export default async function ProjectManagePage({ params }: PageProps) {
                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
                   {project.description || "No description provided."}
                 </p>
+              </div>
+
+              <Separator />
+
+              {/* Capacity Detail */}
+              <div className="space-y-2">
+                <div className="flex items-center text-sm font-medium text-muted-foreground">
+                  <Users className="h-4 w-4 mr-2" /> Capacity
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium">
+                    {capacity ? `${capacity} Volunteers Max` : 'Unlimited Spots'}
+                  </p>
+                  {capacity && currentCount >= capacity && (
+                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">FULL</Badge>
+                  )}
+                </div>
               </div>
 
               <Separator />
@@ -146,7 +171,12 @@ export default async function ProjectManagePage({ params }: PageProps) {
         <div className="lg:col-span-2">
           <Card className="h-full">
             <CardHeader>
-              <CardTitle>Volunteers ({enrollments.length})</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Volunteers ({currentCount})</CardTitle>
+                <div className="text-sm text-muted-foreground">
+                   {capacity ? `${capacity - currentCount} spots remaining` : 'Open enrollment'}
+                </div>
+              </div>
               <CardDescription>
                 Manage participation and track attendance.
               </CardDescription>

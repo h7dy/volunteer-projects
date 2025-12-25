@@ -59,6 +59,8 @@ export default async function ProjectsPage() {
                 status: project.status, 
                 location: project.location,
                 startDate: project.startDate,
+                capacity: project.capacity, 
+                enrolledCount: project.enrolledCount || 0,
               }}
               isJoined={joinedProjectIds.has(project._id.toString())}
             />

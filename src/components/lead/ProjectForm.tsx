@@ -12,25 +12,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface ProjectFormProps {
-  project?: any; // If passed, we are in Edit mode
+  project?: any;        // If passed, we are in Edit mode
+  userRole?: string;    // 'admin' or 'lead' (Default to 'lead')
 }
 
-export default function ProjectForm({ project }: ProjectFormProps) {
+export default function ProjectForm({ project, userRole = 'lead' }: ProjectFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  // DETERMINE BASE PATH
+  // ensures admins stay in /admin and leads stay in /lead
+  const basePath = userRole === 'admin' ? '/admin/projects' : '/lead';
 
   const handleSubmit = async (formData: FormData) => {
     startTransition(async () => {
       try {
         if (project) {
           await updateProject(project._id, formData);
+          // On Update: Go to the specific project details page
+          router.push(`/lead/projects/${project._id}`);
         } else {
           await createProject(formData);
+          // On Create: Go back to the main list
+          router.push(basePath);
         }
-        router.push(`/lead/projects/${project._id}`);
       } catch (error) {
         console.error(error);
-        alert("Something went wrong");
+        if (error instanceof Error) {
+          alert(error.message);
+        } else {
+          alert("An unexpected error occurred");
+        }      
       }
     });
   };
@@ -40,10 +52,10 @@ export default function ProjectForm({ project }: ProjectFormProps) {
     ? new Date(project.startDate).toISOString().split('T')[0] 
     : '';
 
-  // LOGIC: Allow 'draft' only if creating new OR currently draft
   const showDraftOption = !project || project.status === 'draft';
 
-  const cancelLink = `/lead/projects/${project._id}`;
+  // If editing, cancel goes to details. If creating, cancel goes to list.
+  const cancelLink = project ? `/lead/projects/${project._id}` : basePath;
 
   return (
     <form action={handleSubmit} className="space-y-6 max-w-2xl">
@@ -60,7 +72,6 @@ export default function ProjectForm({ project }: ProjectFormProps) {
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              {/* Only show Draft if allowed */}
               {showDraftOption && (
                 <SelectItem value="draft">Draft (Hidden)</SelectItem>
               )}
@@ -76,9 +87,25 @@ export default function ProjectForm({ project }: ProjectFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="location">Location</Label>
-        <Input name="location" defaultValue={project?.location} placeholder="e.g. Central Park" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="location">Location</Label>
+          <Input name="location" defaultValue={project?.location} placeholder="e.g. Central Park" />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="capacity">Capacity (Volunteers)</Label>
+          <Input 
+            type="number" 
+            name="capacity" 
+            defaultValue={project?.capacity ?? ''} 
+            placeholder="Leave blank for ∞" 
+            min="1"
+          />
+          <p className="text-[0.8rem] text-muted-foreground">
+            Leave empty for unlimited spots.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-2">

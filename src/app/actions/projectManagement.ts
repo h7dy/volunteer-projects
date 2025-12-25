@@ -34,15 +34,27 @@ export async function createProject(formData: FormData) {
   const description = formData.get('description') as string;
   const location = formData.get('location') as string;
   const status = formData.get('status') as string;
+
+  // DATE HANDLING: Handle empty string case safely
   const dateStr = formData.get('startDate') as string;
+  const startDate = dateStr ? new Date(dateStr) : undefined;
+
+  // CAPACITY HANDLING: Convert string to number, or null if empty
+  const rawCapacity = formData.get('capacity') as string;
+  // If empty string or '0', save as null (unlimited). Otherwise parse integer.
+  const capacity = (rawCapacity && parseInt(rawCapacity) > 0) 
+    ? parseInt(rawCapacity) 
+    : null;
 
   await Project.create({
     title,
     description,
     location,
+    capacity: capacity as any,
     status: status || 'draft',
-    startDate: dateStr ? new Date(dateStr) : undefined,
-    leadId: user.dbId, 
+    startDate,
+    leadId: user.dbId,
+    enrolledCount: 0
   });
 
   revalidatePath('/lead');
@@ -67,20 +79,40 @@ export async function updateProject(projectId: string, formData: FormData) {
 
   const newStatus = formData.get('status') as string;
 
-  // LOGIC CHECK: Prevent reverting from Active/Completed -> Draft
+  // Prevent reverting from Active/Completed -> Draft
   // If the project was NOT draft before, but the user is trying to set it TO draft
   if (project.status !== 'draft' && newStatus === 'draft') {
     throw new Error("Cannot revert an active or completed project to draft.");
   }
 
+  // DATE HANDLING
   const dateStr = formData.get('startDate') as string;
+  const startDate = dateStr ? new Date(dateStr) : undefined;
+
+  // CAPACITY HANDLING
+  const rawCapacity = formData.get('capacity');
+    
+  // Treat empty string or "0" as null (Unlimited)
+  const newCapacity = (rawCapacity === '' || rawCapacity === null || rawCapacity === '0') 
+    ? null 
+    : parseInt(rawCapacity.toString(), 10);
+
+  // Prevent lowering capacity below current enrollments
+  if (newCapacity !== null) {
+    const currentEnrollment = project.enrolledCount || 0;
+        
+    if (newCapacity < currentEnrollment) {
+      throw new Error(`Cannot set capacity to ${newCapacity}. There are already ${currentEnrollment} volunteers enrolled.`);
+    }
+  }
   
   await Project.findByIdAndUpdate(projectId, {
     title: formData.get('title'),
     description: formData.get('description'),
     location: formData.get('location'),
+    capacity: newCapacity as any,
     status: newStatus,
-    startDate: dateStr ? new Date(dateStr) : undefined,
+    startDate,
   });
 
   revalidatePath('/lead');

@@ -1,4 +1,3 @@
-// src/app/projects/[id]/page.tsx
 import { checkRole } from '@/lib/auth';
 import dbConnect from '@/lib/db';
 import { Project } from '@/models/Project';
@@ -11,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Calendar, MapPin, Clock, User as UserIcon, Mail } from 'lucide-react';
 import Link from 'next/link';
 import ProjectActionButtons from './ProjectActionButtons'; 
+import { CapacityBadge } from "@/components/capacityBadge";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -40,9 +40,12 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 
   const isJoined = !!existingParticipation;
 
+  // Data Clean up
   const lead = project.leadId as unknown as { name?: string; email?: string } | null;
   const leadName = lead?.name || "Unknown Lead";
   const leadEmail = lead?.email || null;
+  const enrolledCount = project.enrolledCount || 0; // Default to 0
+  const capacity = project.capacity;
 
   const formattedDate = project.startDate 
     ? new Date(project.startDate).toLocaleDateString('en-US', { 
@@ -117,12 +120,22 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
           </div>
         </div>
 
+        {/* Sidebar */}
         <div className="lg:pl-4">
           <Card className="sticky top-8 border-emerald-100 shadow-lg overflow-hidden">
             <div className="bg-emerald-50/50 p-4 border-b border-emerald-100">
               <h3 className="font-semibold text-emerald-900">Get Involved</h3>
             </div>
             <CardContent className="p-6 space-y-6">
+              
+              {/* Capacity Badge Display */}
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center text-sm font-medium text-slate-700">
+                  <span>Current Enrollment</span>
+                </div>
+                <CapacityBadge current={enrolledCount} max={capacity} />
+              </div>
+
               <div className="space-y-1">
                 <p className="text-sm text-slate-500">
                   {project.status === 'active' 
@@ -135,6 +148,8 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
                 projectId={project._id.toString()} 
                 isJoined={isJoined}
                 projectStatus={project.status}
+                capacity={capacity}
+                enrolledCount={enrolledCount}
               />
               
               <div className="pt-4 border-t text-xs text-center text-slate-400 flex items-center justify-center gap-1">

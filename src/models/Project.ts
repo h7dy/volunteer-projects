@@ -5,6 +5,8 @@ export interface IProject extends Document {
   description: string;
   leadId: mongoose.Types.ObjectId; // Link to Lead User
   status: 'active' | 'completed' | 'draft';
+  capacity?: number;
+  enrolledCount?: number;
   location?: string; 
   startDate?: Date;  
   createdAt: Date;
@@ -24,6 +26,8 @@ const ProjectSchema = new Schema<IProject>({
     enum: ['active', 'completed', 'draft'], 
     default: 'draft' 
   },
+  capacity: { type: Number, default: null },
+  enrolledCount: { type: Number, default: 0 },
   location: { type: String, required: false },
   startDate: { type: Date, required: false }
 }, { timestamps: true });

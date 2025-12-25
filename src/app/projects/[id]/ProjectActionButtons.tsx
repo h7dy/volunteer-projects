@@ -3,25 +3,30 @@
 import { useState, useTransition } from 'react';
 import { joinProject, leaveProject } from '@/app/actions/participation';
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, AlertCircle, Ban } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, Ban, Users } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 interface ProjectActionButtonsProps {
   projectId: string;
   isJoined: boolean;
   projectStatus: string;
+  capacity?: number | null;
+  enrolledCount: number;
 }
 
 export default function ProjectActionButtons({ 
   projectId, 
   isJoined, 
-  projectStatus 
+  projectStatus,
+  capacity,
+  enrolledCount
 }: ProjectActionButtonsProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const isActive = projectStatus === 'active';
+  const isFull = capacity ? enrolledCount >= capacity : false;
 
   const handleAction = async (action: 'join' | 'leave') => {
     setError(null);
@@ -94,7 +99,18 @@ export default function ProjectActionButtons({
             )}
           </Button>
         </div>
+      ) : isFull ? (
+        // HANDLE FULL STATE (Only if NOT joined)
+        <Button 
+          disabled 
+          size="lg" 
+          className="w-full bg-slate-100 text-slate-400 border border-slate-200 shadow-none cursor-not-allowed"
+        >
+          <Users className="mr-2 h-4 w-4" />
+          Capacity Full
+        </Button>
       ) : (
+        // HANDLE JOIN STATE
         <Button 
           onClick={() => handleAction('join')}
           disabled={isPending}
