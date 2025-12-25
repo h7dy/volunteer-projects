@@ -101,3 +101,21 @@ export async function toggleUserBan(userId: string, currentStatus: string) {
   revalidatePath('/admin/users');
   return { success: `User ${newStatus}` };
 }
+
+export async function clearUserReports(userId: string) {
+  await checkRole(['admin']);
+  await dbConnect();
+
+  try {
+    await User.findByIdAndUpdate(userId, {
+      $set: { reports: [] }
+    });
+
+    revalidatePath('/admin/users');
+    
+    return { success: true, message: "Reports cleared successfully" };
+  } catch (error) {
+    console.error("Failed to clear reports:", error);
+    return { success: false, message: "Failed to clear reports" };
+  }
+}

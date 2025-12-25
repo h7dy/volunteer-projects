@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, Mail, Shield, User as UserIcon, AlertCircle } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { UserActions } from './userActions';
-import { ViewReportsDialog } from "./viewReportsDialog"; // <--- IMPORT
+import { ViewReportsDialog } from "./viewReportsDialog";
 
 export default async function UserManagementPage() {
   const currentUser = await checkRole(['admin']);
@@ -120,6 +120,7 @@ export default async function UserManagementPage() {
                       currentStatus={user.status || 'active'}
                       isCurrentUser={user._id.toString() === currentUser.dbId}
                       hasRequestedLeadAccess={isRequesting}
+                      reportCount={user.reports?.length || 0}
                     />
                   </td>
                 </tr>

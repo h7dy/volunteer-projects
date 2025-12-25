@@ -9,8 +9,8 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, ShieldAlert, UserCog, Ban, CheckCircle, XCircle } from "lucide-react";
-import { updateUserRole, toggleUserBan, rejectLeadAccess } from "@/app/actions/admin";
+import { MoreHorizontal, ShieldAlert, UserCog, Ban, CheckCircle, XCircle, Eraser } from "lucide-react";
+import { updateUserRole, toggleUserBan, rejectLeadAccess, clearUserReports } from "@/app/actions/admin";
 
 interface UserActionsProps {
   userId: string;
@@ -18,6 +18,7 @@ interface UserActionsProps {
   currentStatus: string;
   isCurrentUser: boolean;
   hasRequestedLeadAccess?: boolean; 
+  reportCount?: number;
 }
 
 export function UserActions({ 
@@ -25,7 +26,8 @@ export function UserActions({
   currentRole, 
   currentStatus, 
   isCurrentUser,
-  hasRequestedLeadAccess = false
+  hasRequestedLeadAccess = false,
+  reportCount = 0 // Default to 0
 }: UserActionsProps) {
   
   if (isCurrentUser) {
@@ -56,6 +58,14 @@ export function UserActions({
     if (result.success) alert("Request rejected");
   };
 
+  // NEW: Handle Clear Reports
+  const handleClearReports = async () => {
+    if(!confirm("Are you sure you want to dismiss all reports for this user? This cannot be undone.")) return;
+    const result = await clearUserReports(userId);
+    if (result.success) alert("Reports dismissed");
+    else alert("Failed to dismiss reports");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,24 +77,30 @@ export function UserActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         
+        {/* LEAD REQUEST ACTIONS */}
         {hasRequestedLeadAccess && currentRole === 'volunteer' && (
           <>
             <DropdownMenuItem onClick={() => handleRoleChange('lead')} className="bg-emerald-50 text-emerald-700 focus:bg-emerald-100 cursor-pointer mb-1">
                 <CheckCircle className="mr-2 h-4 w-4" /> Approve Lead Access
             </DropdownMenuItem>
-            
-            {/* NEW: REJECT BUTTON */}
             <DropdownMenuItem onClick={handleReject} className="bg-red-50 text-red-700 focus:bg-red-100 cursor-pointer">
                 <XCircle className="mr-2 h-4 w-4" /> Reject Request
             </DropdownMenuItem>
-            
             <DropdownMenuSeparator />
           </>
         )}
 
-        <DropdownMenuSeparator />
-        
-        {/* Role Management */}
+        {/* DISMISS REPORTS ACTION */}
+        {reportCount > 0 && (
+           <>
+            <DropdownMenuItem onClick={handleClearReports} className="text-orange-600 focus:text-orange-700">
+                <Eraser className="mr-2 h-4 w-4" /> Dismiss Reports ({reportCount})
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+           </>
+        )}
+
+        {/* ROLE MANAGEMENT */}
         <DropdownMenuItem onClick={() => handleRoleChange('volunteer')}>
           <UserCog className="mr-2 h-4 w-4" /> Make Volunteer
         </DropdownMenuItem>
@@ -97,7 +113,7 @@ export function UserActions({
 
         <DropdownMenuSeparator />
         
-        {/* Ban Management */}
+        {/* BAN MANAGEMENT */}
         <DropdownMenuItem 
           onClick={handleBanToggle}
           className={currentStatus === 'active' ? 'text-red-600 focus:text-red-600' : 'text-emerald-600 focus:text-emerald-600'}
