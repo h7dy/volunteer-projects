@@ -1,4 +1,3 @@
-// app/settings/page.tsx
 import { checkRole } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";

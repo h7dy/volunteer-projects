@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
-    --primary: 158 64% 52%; /* Emerald 600 - The MongoDB Green */
+    --primary: 158 64% 52%; /* Emerald 600 */
     --primary-foreground: 210 40% 98%;
     
     --secondary: 210 40% 96.1%; /* Slate 100 */
@@ -30,7 +30,7 @@
     
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 158 64% 52%; /* Focus ring matches Primary Green */
+    --ring: 158 64% 52%;
     
     --radius: 0.5rem;
   }
@@ -78,15 +78,12 @@
 }
 
 /* Custom Helper Classes 
-  These bridge the gap between Shadcn components and manual HTML 
 */
 @layer components {
-  /* Matches MongoDB/Shadcn Primary Button */
   .btn-primary {
     @apply bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-sm inline-flex items-center justify-center;
   }
   
-  /* Matches Secondary/Outline Button */
   .btn-secondary {
     @apply bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors inline-flex items-center justify-center;
   }

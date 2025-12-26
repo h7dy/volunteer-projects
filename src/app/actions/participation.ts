@@ -1,4 +1,3 @@
-// src/app/actions/participation.ts
 'use server';
 
 import { checkRole } from '@/lib/auth';

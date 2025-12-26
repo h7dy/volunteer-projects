@@ -7,7 +7,7 @@ interface CapacityBadgeProps {
 }
 
 export function CapacityBadge({ current = 0, max }: CapacityBadgeProps) {
-  // Scenario 1: Unlimited Capacity (max is null/0/undefined)
+  // Unlimited Capacity (max is null/0/undefined)
   if (!max) {
     return (
       <Badge 
@@ -19,7 +19,7 @@ export function CapacityBadge({ current = 0, max }: CapacityBadgeProps) {
     );
   }
 
-  // Scenario 2: Limited Capacity
+  // Limited Capacity
   const isFull = current >= max;
 
   return (

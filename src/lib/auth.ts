@@ -4,11 +4,9 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 
 export async function getAuthUser() {
-  // Get the session from Auth0 (Edge/Network check)
   const session = await auth0.getSession();
   const auth0User = session?.user;
 
-  // If no user is logged in via Auth0, return null immediately
   if (!auth0User || !auth0User.email) {
     return null;
   }
@@ -18,8 +16,8 @@ export async function getAuthUser() {
   // Try to find the user by their unique Auth0 ID (standard path)
   let dbUser = await User.findOne({ auth0Id: auth0User.sub });
 
-  // Legacy Account Linking (The migration path)
-  // If we didn't find them by ID, check if they exist by Email (e.g. manually seeded users)
+  // Legacy Account Linking (migration path)
+  // If not found by ID, check if they exist by Email
   if (!dbUser) {
     dbUser = await User.findOne({ email: auth0User.email });
 
@@ -68,7 +66,7 @@ export async function checkRole(allowedRoles: string[]) {
   }
 
   if (user.status === 'banned') {
-    redirect('/banned'); // You'll need to create a simple /app/banned/page.tsx
+    redirect('/banned');
   }
 
   // If logged in but wrong role, send to unauthorized

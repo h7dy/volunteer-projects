@@ -6,7 +6,7 @@ import { Project } from '@/models/Project';
 import { revalidatePath } from 'next/cache';
 import User from "@/models/User";
 
-// READ ALL (ADMIN)
+// --- READ ALL (ADMIN) ---
 export async function getAllProjectsForAdmin() {
   await checkRole(['admin']);
   await dbConnect();

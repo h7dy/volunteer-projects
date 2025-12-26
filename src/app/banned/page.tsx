@@ -1,4 +1,3 @@
-// app/banned/page.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ban } from "lucide-react";
 

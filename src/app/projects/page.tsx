@@ -1,4 +1,3 @@
-// src/app/projects/page.tsx
 import { checkRole } from '@/lib/auth';
 import { Project } from '@/models/Project';
 import { Participation } from '@/models/Participation';

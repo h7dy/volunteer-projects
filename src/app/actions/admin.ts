@@ -102,6 +102,7 @@ export async function toggleUserBan(userId: string, currentStatus: string) {
   return { success: `User ${newStatus}` };
 }
 
+// Clear user's reports
 export async function clearUserReports(userId: string) {
   await checkRole(['admin']);
   await dbConnect();

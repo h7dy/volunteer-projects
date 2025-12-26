@@ -44,7 +44,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
   const lead = project.leadId as unknown as { name?: string; email?: string } | null;
   const leadName = lead?.name || "Unknown Lead";
   const leadEmail = lead?.email || null;
-  const enrolledCount = project.enrolledCount || 0; // Default to 0
+  const enrolledCount = project.enrolledCount || 0;
   const capacity = project.capacity;
 
   const formattedDate = project.startDate 

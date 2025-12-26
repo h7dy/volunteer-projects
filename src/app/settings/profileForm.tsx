@@ -1,4 +1,3 @@
-// app/settings/profileForm.tsx
 'use client'
 
 import { updateProfile } from "@/app/actions/user";

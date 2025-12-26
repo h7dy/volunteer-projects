@@ -27,7 +27,7 @@ export function UserActions({
   currentStatus, 
   isCurrentUser,
   hasRequestedLeadAccess = false,
-  reportCount = 0 // Default to 0
+  reportCount = 0
 }: UserActionsProps) {
   
   if (isCurrentUser) {
@@ -58,7 +58,7 @@ export function UserActions({
     if (result.success) alert("Request rejected");
   };
 
-  // NEW: Handle Clear Reports
+  // Handle Clear Reports
   const handleClearReports = async () => {
     if(!confirm("Are you sure you want to dismiss all reports for this user? This cannot be undone.")) return;
     const result = await clearUserReports(userId);

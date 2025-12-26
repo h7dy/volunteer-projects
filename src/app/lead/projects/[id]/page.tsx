@@ -233,7 +233,6 @@ export default async function ProjectManagePage({ params }: PageProps) {
             </CardContent>
           </Card>
         </div>
-
       </div>
     </div>
   );
