@@ -25,7 +25,7 @@ export default async function Navbar() {
           {!user ? (
             <>
                <Link href="/auth/login" className="text-slate-600 hover:text-emerald-600 transition-colors">Sign In</Link>
-               <Link href="/auth/register" className="btn-primary text-sm px-5">Get Started</Link>
+               <Link href="/auth/login" className="btn-primary text-sm px-5">Get Started</Link>
             </>
           ) : (
             <>
