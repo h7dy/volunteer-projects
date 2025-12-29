@@ -31,6 +31,7 @@ export default function ProjectForm({ project, userRole = 'lead' }: ProjectFormP
         if (project) {
           await updateProject(project._id, formData);
           // On Update: Go to the specific project details page
+          router.refresh();
           router.push(`/lead/projects/${project._id}`);
         } else {
           await createProject(formData);
