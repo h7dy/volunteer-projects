@@ -35,6 +35,7 @@ export default function ProjectForm({ project, userRole = 'lead' }: ProjectFormP
         } else {
           await createProject(formData);
           // On Create: Go back to the main list
+          router.refresh();
           router.push(basePath);
         }
       } catch (error: any) {
