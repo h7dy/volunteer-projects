@@ -1,6 +1,10 @@
 # Volunteer Management System
 
-![App Screenshot](./public/screenshot.png)
+<p align="center">
+  <img src="./public/screenshot.png" alt="App Screenshot" width="100%">
+  <br>
+  <sub>Mockup created via <a href="https://shots.so">shots.so</a></sub>
+</p>
 
 A full-stack platform connecting volunteers with community projects. This application facilitates role-based access for Admins, Project Leads, and Volunteers to coordinate events, track enrollments, and manage community safety.
 
