@@ -13,38 +13,50 @@ export async function getAuthUser() {
 
   await dbConnect();
 
-  // Try to find the user by their unique Auth0 ID (standard path)
+  // Try to find by unique Auth0 ID
   let dbUser = await User.findOne({ auth0Id: auth0User.sub });
 
-  // Legacy Account Linking (migration path)
-  // If not found by ID, check if they exist by Email
+  // Migration Path: Check by Email if ID not found
   if (!dbUser) {
     dbUser = await User.findOne({ email: auth0User.email });
 
     if (dbUser) {
-      // Only link if Auth0 has verified the email.
       if (auth0User.email_verified) {
         dbUser.auth0Id = auth0User.sub;
         await dbUser.save();
       } else {
-        throw new Error("Please verify your email address with your provider before logging in.");
+        throw new Error("Please verify your email address before logging in.");
       }
     }
   }
 
-  // User Creation (alternate path)
-  // If they don't exist by ID or Email, they are a brand new user.
+  // Creation Path (with Race Condition Protection)
   if (!dbUser) {
-    dbUser = await User.create({
-      email: auth0User.email,
-      auth0Id: auth0User.sub,
-      role: 'volunteer', // Default role
-      status: 'active'
-    });
+    try {
+      dbUser = await User.create({
+        email: auth0User.email,
+        auth0Id: auth0User.sub,
+        role: 'volunteer',
+        status: 'active'
+      });
+    } catch (error: any) {
+      // HANDLE RACE CONDITION
+      // If MongoDB says "Duplicate Email" (code 11000), it means another request 
+      // created the user 5 milliseconds ago. We just fetch that user.
+      if (error.code === 11000) {
+        dbUser = await User.findOne({ email: auth0User.email });
+      } else {
+        // If it's a different error, crash as normal
+        throw error;
+      }
+    }
   }
 
+  if (!dbUser) {
+    throw new Error("Failed to create or retrieve user account.");
+  }
+  
   // Return the "Hybrid" User Object
-  // Contains Auth0 profile data AND MongoDB _id/role
   return {
     ...auth0User,
     dbId: dbUser._id.toString(),
@@ -54,13 +66,9 @@ export async function getAuthUser() {
   };
 }
 
-/**
- * Page Guard
-*/
 export async function checkRole(allowedRoles: string[]) {
   const user = await getAuthUser();
 
-  // If not logged in, send to login
   if (!user) {
     redirect('/auth/login');
   }
@@ -69,11 +77,9 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/banned');
   }
 
-  // If logged in but wrong role, send to unauthorized
   if (!allowedRoles.includes(user.role)) {
     redirect('/unauthorized');
   }
 
-  // Return the user for use in the page
   return user;
 }
