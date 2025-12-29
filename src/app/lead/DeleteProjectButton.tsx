@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { deleteProject } from "@/app/actions/projectManagement"; 
 import { useTransition } from "react";
+import { toast } from "sonner";
 
 export function DeleteProjectButton({ projectId }: { projectId: string }) {
   const [isPending, startTransition] = useTransition();
@@ -16,10 +17,15 @@ export function DeleteProjectButton({ projectId }: { projectId: string }) {
       try {
         // Server Action
         await deleteProject(projectId);
+        toast.success("Project deleted successfully");
       } catch (error) {
         // Error Handling
         console.error("Delete failed:", error);
-        alert("Failed to delete the project. Please try again.");
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error("Failed to delete the project. Please try again.");
+        }
       }
     });
   }

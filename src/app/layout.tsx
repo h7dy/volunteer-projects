@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
+import { Toaster } from "@/components/ui/sonner"
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
@@ -21,6 +22,7 @@ export default function RootLayout({
           <main className="flex-grow">
             {children}
           </main>
+          <Toaster />
         </Auth0Provider>
       </body>
     </html>

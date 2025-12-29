@@ -10,6 +10,7 @@ import { useTransition } from "react";
 import { Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner"
 
 interface ProjectFormProps {
   project?: any;        // If passed, we are in Edit mode
@@ -36,17 +37,14 @@ export default function ProjectForm({ project, userRole = 'lead' }: ProjectFormP
           // On Create: Go back to the main list
           router.push(basePath);
         }
-      } catch (error) {
-        console.error(error);
-        if (error instanceof Error) {
-          alert(error.message);
-        } else {
-          alert("An unexpected error occurred");
-        }      
+      } catch (error: any) {
+        toast.error("Error", {
+            description: error.message || "Something went wrong"
+        });   
       }
     });
   };
-
+    
   // Helper: Date formatting
   const defaultDate = project?.startDate 
     ? new Date(project.startDate).toISOString().split('T')[0] 

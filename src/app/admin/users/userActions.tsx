@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, ShieldAlert, UserCog, Ban, CheckCircle, XCircle, Eraser } from "lucide-react";
 import { updateUserRole, toggleUserBan, rejectLeadAccess, clearUserReports } from "@/app/actions/admin";
+import { toast } from "sonner";
 
 interface UserActionsProps {
   userId: string;
@@ -36,8 +37,8 @@ export function UserActions({
 
   const handleRoleChange = async (newRole: string) => {
     const result = await updateUserRole(userId, newRole);
-    if (result.success) alert("Role updated");
-    else alert("Failed to update role");
+    if (result.success) toast.success("Role updated");
+    else toast.error("Failed to update role");
   };
 
   const handleBanToggle = async () => {
@@ -48,22 +49,22 @@ export function UserActions({
     if (!confirm(confirmMsg)) return;
 
     const result = await toggleUserBan(userId, currentStatus);
-    if (result.success) alert("User status updated");
-    else alert("Failed to update status");
+    if (result.success) toast.success("User status updated");
+    else toast.error("Failed to update status");
   };
 
   const handleReject = async () => {
     if(!confirm("Are you sure you want to permanently decline this request?")) return;
     const result = await rejectLeadAccess(userId);
-    if (result.success) alert("Request rejected");
+    if (result.success) toast.success("Request rejected");
   };
 
   // Handle Clear Reports
   const handleClearReports = async () => {
     if(!confirm("Are you sure you want to dismiss all reports for this user? This cannot be undone.")) return;
     const result = await clearUserReports(userId);
-    if (result.success) alert("Reports dismissed");
-    else alert("Failed to dismiss reports");
+    if (result.success) toast.success("Reports dismissed");
+    else toast.error("Failed to dismiss reports");
   };
 
   return (

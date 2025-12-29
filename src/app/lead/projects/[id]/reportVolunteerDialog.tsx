@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Flag } from "lucide-react";
+import { toast } from "sonner"
 
 interface ReportDialogProps {
   volunteerId: string;
@@ -30,11 +31,12 @@ export function ReportVolunteerDialog({ volunteerId, volunteerName, projectId }:
     setLoading(false);
     
     if (result.error) {
-        alert(result.error);
+      toast.error(result.error || "Something went wrong");
+
     } else {
         setOpen(false);
         setReason("");
-        alert("Report submitted.");
+        toast.success("Report submitted.");
     }
   }
 

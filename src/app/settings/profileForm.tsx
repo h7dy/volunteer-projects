@@ -4,6 +4,7 @@ import { updateProfile } from "@/app/actions/user";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner"
 import { useState } from "react";
 
 interface ProfileFormProps {
@@ -22,9 +23,9 @@ export function ProfileForm({ initialName, email }: ProfileFormProps) {
     const result = await updateProfile(formData);
 
     if (result.error) {
-      alert(result.error);
+      toast.error(result.error || "Something went wrong");
     } else {
-      alert("Profile saved!");
+      toast.success("Profile saved!");
     }
     
     setLoading(false);
