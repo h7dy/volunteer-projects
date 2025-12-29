@@ -39,7 +39,7 @@ export async function getAuthUser() {
       email: auth0User.email,
       auth0Id: auth0User.sub,
       role: 'volunteer', // Default role
-      status: 'pending'
+      status: 'active'
     });
   }
 
