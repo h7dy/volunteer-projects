@@ -30,8 +30,8 @@ Deployed on [Vercel](https://volunteer-projects.vercel.app).
 ## Installation
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone https://github.com/h7dy/volunteer-projects.git
+    cd volunteer-projects
     ```
 
 2.  **Install dependencies**
