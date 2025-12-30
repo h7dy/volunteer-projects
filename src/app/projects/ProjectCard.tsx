@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Leaf, Check, MapPin, Calendar } from "lucide-react";
+import { Loader2, Leaf, MapPin, Calendar, CheckCircle2 } from "lucide-react";
 import { CapacityBadge } from "@/components/capacityBadge";
 
 interface ProjectCardProps {
@@ -58,17 +58,27 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
   };
 
   return (
-    <Card className={`flex flex-col h-full transition-all duration-200 hover:shadow-md 
-      ${isJoined ? 'border-emerald-500/50 bg-emerald-50/10' : ''}
+    <Card className={`flex flex-col h-full transition-all duration-200 hover:shadow-md relative overflow-hidden
+      ${isJoined ? 'border-emerald-500 ring-1 ring-emerald-500/20 bg-emerald-50/10' : ''}
       ${!isActive && !isJoined ? 'opacity-75 bg-slate-50' : ''} 
     `}>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="space-y-1 w-full mr-2">
-            <CardTitle className="text-xl flex items-center gap-2">
+      
+      {/* VISUAL INDICATOR FOR ENROLLED STATE */}
+      {isJoined && (
+        <div className="absolute top-0 right-0 p-0">
+          <div className="bg-emerald-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-lg shadow-sm flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" /> Joined
+          </div>
+        </div>
+      )}
+
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start gap-4">
+          <div className="space-y-1.5 w-full">
+            <CardTitle className="text-lg md:text-xl font-bold leading-tight line-clamp-2 pr-6">
               <Link 
                 href={`/projects/${project._id}`} 
-                className="hover:text-emerald-600 transition-colors line-clamp-1"
+                className="hover:text-emerald-700 transition-colors"
               >
                 {project.title}
               </Link>
@@ -81,39 +91,43 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
                 max={project.capacity} 
               />
 
-              {/* STATUS BADGES */}
-              {isJoined && (
-                <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100">
-                  <Check className="w-3 h-3 mr-1" /> Enrolled
-                </Badge>
-              )}
+              {/* STATUS BADGE (Only if not active) */}
               {!isActive && (
-                <Badge variant="outline" className="text-slate-500">
+                <Badge variant="outline" className="text-slate-500 bg-slate-100 border-slate-200">
                   {project.status}
                 </Badge>
               )}
             </div>
           </div>
-
-          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-            <Leaf className="w-4 h-4 text-emerald-600" />
-          </div>
+          
+          {/* Icon (Hidden if joined to make room for the 'Joined' banner) */}
+          {!isJoined && (
+            <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+              <Leaf className="w-5 h-5 text-emerald-600" />
+            </div>
+          )}
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 space-y-3">
+      <CardContent className="flex-1 space-y-4">
         {/* Date & Location Row */}
-        <div className="flex flex-wrap gap-3 text-sm text-slate-500">
-          {project.location && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="truncate max-w-[120px]">{project.location}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-500 bg-slate-50/50 p-2 rounded-md border border-slate-100">
+          {formattedDate && (
+            <div className="flex items-center gap-2 min-w-fit">
+              <Calendar className="w-4 h-4 text-slate-400" />
+              <span className="font-medium text-slate-700">{formattedDate}</span>
             </div>
           )}
-          {formattedDate && (
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{formattedDate}</span>
+          
+          {/* Separator for desktop */}
+          {formattedDate && project.location && (
+            <span className="hidden sm:inline text-slate-300">|</span>
+          )}
+
+          {project.location && (
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+              <span className="truncate">{project.location}</span>
             </div>
           )}
         </div>
@@ -123,30 +137,36 @@ export default function ProjectCard({ project, isJoined }: ProjectCardProps) {
         </CardDescription>
       </CardContent>
 
-      <CardFooter className="pt-4 gap-2">
-        <Button variant="outline" className="flex-1" asChild>
+      <CardFooter className="pt-2 pb-4 gap-3 flex-col sm:flex-row">
+        <Button variant="outline" className="w-full sm:flex-1 h-10 border-slate-200 hover:bg-slate-50" asChild>
           <Link href={`/projects/${project._id}`}>
-            Details
+            View Details
           </Link>
         </Button>
 
         <Button 
           onClick={handleToggle}
-          // Disable if: Pending OR (Not Joined AND (Not Active OR Full))
           disabled={isPending || (!isJoined && (!isActive || isFull))} 
           variant={isJoined ? "destructive" : "default"}
-          className={`flex-1 ${!isJoined && isActive && !isFull ? "bg-slate-900 hover:bg-slate-800" : ""}`}
+          className={`w-full sm:flex-1 h-10 shadow-sm transition-all
+            ${isJoined 
+              ? "bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 border border-red-200" 
+              : !isActive 
+                ? "opacity-50" 
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+            }
+          `}
         >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : isJoined ? (
-            "Leave"
+            "Leave Project"
           ) : !isActive ? (
             "Closed"
           ) : isFull ? (
             "Full"
           ) : (
-            "Join"
+            "Join Now"
           )}
         </Button>
       </CardFooter>

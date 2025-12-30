@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
 
@@ -16,12 +16,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 min-h-screen flex flex-col" suppressHydrationWarning={true}>
+      <body 
+        className="bg-gray-50 min-h-screen flex flex-col overflow-x-hidden antialiased" 
+        suppressHydrationWarning={true}
+      >
         <Auth0Provider>
           <Navbar /> 
-          <main className="flex-grow">
+          <main className="flex-grow w-full">
             {children}
           </main>
+
           <Toaster />
         </Auth0Provider>
       </body>

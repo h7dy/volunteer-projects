@@ -7,30 +7,38 @@ interface CapacityBadgeProps {
 }
 
 export function CapacityBadge({ current = 0, max }: CapacityBadgeProps) {
-  // Unlimited Capacity (max is null/0/undefined)
+  const commonClasses = "gap-1.5 font-mono font-medium whitespace-nowrap items-center";
+
+  // Case 1: Unlimited Capacity
   if (!max) {
     return (
       <Badge 
         variant="outline" 
-        className="gap-1.5 font-mono font-medium text-emerald-700 border-emerald-200 bg-emerald-50"
+        className={`${commonClasses} text-emerald-700 border-emerald-200 bg-emerald-50`}
       >
-        {current} / <Infinity className="h-3 w-3" />
+        <span>{current}</span>
+        <span className="text-emerald-300">/</span>
+        <Infinity className="h-3 w-3" />
       </Badge>
     );
   }
 
-  // Limited Capacity
+  // Case 2: Limited Capacity
   const isFull = current >= max;
 
   return (
     <Badge 
       variant={isFull ? "destructive" : "secondary"} 
-      className={`gap-1.5 font-mono font-medium ${
-        !isFull ? "text-slate-700 bg-slate-100 hover:bg-slate-200 border-slate-200" : ""
+      className={`${commonClasses} ${
+        !isFull 
+          ? "text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200" 
+          : "border border-red-200" 
       }`}
     >
-      <Users className="h-3 w-3" />
-      {current} / {max}
+      <Users className="h-3 w-3 opacity-70" />
+      <span>{current}</span>
+      <span className="opacity-40 mx-0.5">/</span>
+      <span>{max}</span>
     </Badge>
   );
 }

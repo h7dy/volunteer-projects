@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import { Project } from "@/models/Project";
 import { revalidatePath } from "next/cache";
+import Participation from "@/models/Participation";
 
 // Get Global Stats for Dashboard
 export async function getAdminStats() {
@@ -64,12 +65,43 @@ export async function updateUserRole(userId: string, newRole: string) {
   await dbConnect();
 
   if (userId === admin.dbId) {
-    return { error: "You cannot change your own role." };
+    return { success: false, message: "You cannot change your own role." };
   }
 
-  await User.findByIdAndUpdate(userId, { role: newRole });
-  revalidatePath('/admin/users');
-  return { success: "Role updated" };
+  try {
+    // 1. Find all projects this user is currently enrolled in
+    const userParticipations = await Participation.find({ userId: userId });
+
+    // 2. Extract the Project IDs
+    const projectIds = userParticipations.map(p => p.projectId);
+
+    // 3. Decrement the 'enrolledCount' for all those projects
+    if (projectIds.length > 0) {
+      await Project.updateMany(
+        { _id: { $in: projectIds }, enrolledCount: { $gt: 0 } },
+        { $inc: { enrolledCount: -1 } }
+      );
+    }
+
+    // 4. Delete the participation records
+    await Participation.deleteMany({ userId: userId });
+
+    // 5. Finally, update the User's Role
+    const user = await User.findByIdAndUpdate(userId, { role: newRole });
+    
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    revalidatePath('/admin/users');
+    revalidatePath('/projects'); // Update project lists to reflect new counts
+    
+    return { success: true, message: "Role updated and enrollment counts corrected." };
+
+  } catch (error) {
+    console.error("Error updating role:", error);
+    return { success: false, message: "Internal server error" };
+  }
 }
 
 // Reject lead access

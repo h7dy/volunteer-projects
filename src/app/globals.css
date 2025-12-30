@@ -71,25 +71,47 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-base antialiased;
     font-family: Arial, Helvetica, sans-serif;
-    -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Custom Helper Classes 
-*/
+/* Custom Helper Classes */
 @layer components {
   .btn-primary {
-    @apply bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors shadow-sm inline-flex items-center justify-center;
+    @apply bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium shadow-sm inline-flex items-center justify-center transition-all hover:bg-emerald-700 active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors inline-flex items-center justify-center;
+    @apply bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium inline-flex items-center justify-center transition-all hover:bg-slate-50 active:scale-95;
   }
   
   /* Standard Card Style */
   .card-base {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm;
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden;
+  }
+
+  .page-container {
+    @apply max-w-5xl mx-auto px-4 py-6 md:px-8 md:py-12 w-full;
+  }
+  
+  /* --- FORCE SONNER TOAST STYLES --- */
+  [data-sonner-toast] {
+    @apply bg-white border border-slate-200 shadow-xl !important;
+  }
+  
+  /* Force Title Color */
+  [data-sonner-toast] [data-title] {
+    @apply text-slate-900 font-semibold !important;
+  }
+  
+  /* Force Description Color (Fixes the light gray issue) */
+  [data-sonner-toast] [data-description] {
+    @apply text-slate-600 !important;
+  }
+  
+  /* Ensure Icons have color */
+  [data-sonner-toast] [data-icon] {
+    @apply text-current !important;
   }
 }
