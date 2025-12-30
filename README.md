@@ -6,7 +6,9 @@
   <sub>Mockup created via <a href="https://shots.so">shots.so</a></sub>
 </p>
 
-A full-stack platform connecting volunteers with community projects. This application facilitates role-based access for Admins, Project Leads, and Volunteers to coordinate events, track enrollments, and manage community safety.
+A full-stack platform connecting volunteers with community projects. This application facilitates role-based access for Admins, Project Leads, and Volunteers to coordinate events, track enrollments, and manage community safety. 
+
+Deployed on [Vercel](https://volunteer-projects.vercel.app).
 
 ## Features
 
@@ -28,13 +30,13 @@ A full-stack platform connecting volunteers with community projects. This applic
 ## Installation
 1.  **Clone the repository**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone https://github.com/h7dy/volunteer-projects.git
+    cd volunteer-projects
     ```
 
 2.  **Install dependencies**
     ```bash
-    npm install
+    npm install --legacy-peer-deps
     ```
 
 3.  **Environment Variables**
@@ -65,7 +67,3 @@ A full-stack platform connecting volunteers with community projects. This applic
 | **Volunteer** | View projects & history, Enroll/Leave projects, Request Lead access. |
 | **Lead** | Create/Edit/Delete own projects, View & report enrollments, Manage project status. |
 | **Admin** | Manage all users (Ban/Promote), View & review all reports, View & manage all projects. |
-
-## Deployment
-
-Deployed on [Vercel](https://vercel.com).
